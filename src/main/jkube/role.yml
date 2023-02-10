@@ -1,0 +1,10 @@
+metadata:
+  name: ${project.artifactId}
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - pods
+  verbs:
+    - get
+    - list

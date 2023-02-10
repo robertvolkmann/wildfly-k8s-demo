@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.github.robertvolkmann</groupId>
+    <artifactId>wildfly-k8s-demo</artifactId>
+    <packaging>war</packaging>
+    <version>1.0.0</version>
+
+    <name>WildFly Kubernetes Demo</name>
+    <description>WildFly Web Clustering in Kubernetes</description>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.version>3.10.1</maven.compiler.version>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+        <maven.war.version>3.3.2</maven.war.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <wildfly.jar.version>8.1.0.Final</wildfly.jar.version>
+        <wildfly.version>27.0.1.Final</wildfly.version>
+
+        <jkube.build.strategy>jib</jkube.build.strategy>
+        <jkube.createExternalUrls>true</jkube.createExternalUrls>
+        <jkube.version>1.10.1</jkube.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>10.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-server-api</artifactId>
+            <version>${wildfly.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven.war.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <version>${wildfly.jar.version}</version>
+                <configuration>
+                    <cloud>
+                        <enable-jgroups-password>true</enable-jgroups-password>
+                        <type>kubernetes</type>
+                    </cloud>
+                    <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)#${wildfly.version}
+                    </feature-pack-location>
+                    <layers>
+                        <layer>cloud-server</layer>
+                        <layer>web-clustering</layer>
+                    </layers>
+                    <excluded-layers>
+                        <layer>deployment-scanner</layer>
+                    </excluded-layers>
+                    <plugin-options>
+                        <jboss-fork-embedded>true</jboss-fork-embedded>
+                        <jboss-maven-dist/>
+                        <jboss-maven-repo>target/${project.build.finalName}-maven-repo</jboss-maven-repo>
+                    </plugin-options>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jkube</groupId>
+                <artifactId>kubernetes-maven-plugin</artifactId>
+                <version>${jkube.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>resource</goal>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
